@@ -10,26 +10,55 @@ A FastAPI-based microservice that provides mathematical properties for a given n
 - Retrieve fun mathematical facts
 - CORS support
 
-## Setup
-1. Clone the repository
-2. Create a virtual environment
+# Project Structure
+
+![image](https://github.com/user-attachments/assets/a87e7733-240b-48ad-b2f0-0d784f8fbe4e)
+
+
+# Create project directory
+```bash
+mkdir num-classifier
+cd num-classifier
+mkdir app
+```
+
+# Create virtual environment
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
+###### Windows: venv\Scripts\activate
+###### Mac/Linux: source venv/bin/activate
 
-3. Install dependencies
+# Install dependencies
 ```bash
-pip install -r requirements.txt
+pip install fastapi uvicorn requests python-dotenv
+pip freeze > requirements.txt
 ```
 
-4. Run the application
+##### Next, create files number_utils.py and main.py in app/ directory
+
+##### Afterwards, create Dockerfile in main directory num-classifier
+
+
+### Deployment Steps:
+
+1. Create a GitHub repository
+2. Push all files to the repository
 ```bash
-uvicorn app.main:app --reload
+git init     # Initialize git repository
+git add .    # Add all files
+git commit -m "Initial commit: Number Properties API"    # Commit files
+git branch -M main    # Create main branch (if not already created)
+git remote add origin repo-link     #replace with your actual repository URL
+git push -u origin main    # Push to main branch
 ```
 
-## Deployment
-Deployed on Render: [Render Deployment URL]
+3. Deploy on Render:
+
+##### Connect GitHub repository
+##### Set build command: pip install -r requirements.txt
+##### Set start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ## API Endpoint
 `GET /api/classify-number?number=371`
@@ -52,5 +81,3 @@ Deployed on Render: [Render Deployment URL]
 - Uvicorn
 - Requests
 
-## License
-MIT License
