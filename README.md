@@ -1,7 +1,7 @@
-# Number Properties API
+# Number Classifier API
 
 ## Overview
-A FastAPI-based microservice that provides mathematical properties for a given number.
+A FastAPI-based microservice that takes a number and returns interesting mathematical properties about it, along with a fun fact.
 
 ## Features
 - Determine if a number is prime
@@ -81,3 +81,6 @@ git push -u origin main    # Push to main branch
 - Uvicorn
 - Requests
 
+## License
+
+This project is open-source and available under the MIT License.
