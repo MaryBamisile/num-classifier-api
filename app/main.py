@@ -1,5 +1,5 @@
 # app/main.py
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .number_utils import (
@@ -36,7 +36,8 @@ async def classify_number(number: str = Query(..., min_length=1)):
         if isinstance(n, int):  # Only integers should be classified as even/odd or Armstrong
             properties.append("even" if n % 2 == 0 else "odd")
 
-            if is_armstrong_number(n):
+            # Only non-negative integers can be Armstrong numbers
+            if n >= 0 and is_armstrong_number(n):
                 properties.append("armstrong")
 
         # Construct response
@@ -44,7 +45,7 @@ async def classify_number(number: str = Query(..., min_length=1)):
             status_code=200,
             content={
                 "number": n,
-                "is_prime": is_prime(abs(int(n))) if isinstance(n, int) and n >= 0 else False,
+                "is_prime": is_prime(n) if isinstance(n, int) and n > 1 else False,  # Only check for primes if n > 1
                 "is_perfect": False,  # Placeholder (you can add perfect number logic)
                 "properties": properties,
                 "digit_sum": get_digit_sum(abs(int(n))) if isinstance(n, int) else sum(int(d) for d in str(abs(n)) if d.isdigit()),
