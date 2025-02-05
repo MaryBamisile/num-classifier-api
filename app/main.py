@@ -1,61 +1,68 @@
+# app/main.py
 from fastapi import FastAPI, Query, HTTPException
-import requests
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import List, Union
-from .utils import is_prime, is_perfect, is_armstrong, digit_sum
-from .schemas import NumberResponse, ErrorResponse
+from .number_utils import (
+    is_prime, 
+    is_armstrong_number, 
+    get_digit_sum, 
+    get_fun_fact
+)
+import math
 
 app = FastAPI()
 
-# Fun Fact API URL
-FUN_FACT_API_URL = "http://numbersapi.com/{}/math?json"
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/api/classify-number", response_model=NumberResponse)
-async def classify_number(number: Union[int, float, str] = Query(..., description="The number to classify")):
+@app.get("/api/classify-number", response_class=JSONResponse)
+async def classify_number(number: str = Query(..., min_length=1)):
     try:
-        # Convert the input to a float first (to handle both integers and floating-point numbers)
-        number_float = float(number)
-        # If the input is a whole number, convert it to an integer
-        number_int = int(number_float) if number_float.is_integer() else number_float
-    except (ValueError, TypeError):
-        # If the input cannot be converted to a number, return a 400 Bad Request
-        raise HTTPException(status_code=400, detail={"number": str(number), "error": True})
+        # Convert input to float first
+        n = float(number)
 
-    # Get fun fact
-    response = requests.get(FUN_FACT_API_URL.format(number_int if isinstance(number_int, int) else number_float))
-    fun_fact = response.json().get("text", "No fun fact available.")
+        # Convert to integer if it is a whole number
+        if n.is_integer():
+            n = int(n)
 
-    # Determine properties
-    properties: List[str] = []
-    if isinstance(number_int, int):
-        if number_int >= 0:  # Only check for prime, perfect, and Armstrong for non-negative integers
-            if is_prime(number_int):
-                properties.append("prime")
-            if is_perfect(number_int):
-                properties.append("perfect")
-            if is_armstrong(number_int):
+        # Determine properties
+        properties = []
+        if isinstance(n, int):  # Only integers should be classified as even/odd or Armstrong
+            properties.append("even" if n % 2 == 0 else "odd")
+
+            if is_armstrong_number(n):
                 properties.append("armstrong")
-        if number_int % 2 == 0:
-            properties.append("even")
-        else:
-            properties.append("odd")
-    else:
-        # Floating-point numbers have no properties
-        pass
 
-    return {
-        "number": number_int if isinstance(number_int, int) else number_float,
-        "is_prime": is_prime(number_int) if isinstance(number_int, int) else False,
-        "is_perfect": is_perfect(number_int) if isinstance(number_int, int) else False,
-        "properties": properties,
-        "digit_sum": digit_sum(number_int) if isinstance(number_int, int) else None,
-        "fun_fact": fun_fact
-    }
+        # Construct response
+        return JSONResponse(
+            status_code=200,
+            content={
+                "number": n,
+                "is_prime": is_prime(abs(int(n))) if isinstance(n, int) and n >= 0 else False,
+                "is_perfect": False,  # Placeholder (you can add perfect number logic)
+                "properties": properties,
+                "digit_sum": get_digit_sum(abs(int(n))) if isinstance(n, int) else sum(int(d) for d in str(abs(n)) if d.isdigit()),
+                "fun_fact": get_fun_fact(abs(int(n))) if isinstance(n, int) else "No specific fun fact for non-integer numbers"
+            }
+        )
 
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    return JSONResponse(status_code=exc.status_code, content=exc.detail)
+    except ValueError:
+        # Handle invalid input (non-numeric values)
+        return JSONResponse(
+            status_code=400,
+            content={
+                "number": number,
+                "error": True,
+                "message": "Invalid number format"
+            }
+        )
+
 
 if __name__ == "__main__":
     import uvicorn
