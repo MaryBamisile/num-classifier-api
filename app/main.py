@@ -54,7 +54,7 @@ async def classify_number(number: str = Query(..., min_length=1)):
     except ValueError:
         # Handle invalid input
         return JSONResponse(
-            status_code=400,
+            status_code=200,
             content={
                 "number": number,
                 "error": True,
